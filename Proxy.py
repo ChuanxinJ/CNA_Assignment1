@@ -4,6 +4,7 @@ import sys
 import os
 import argparse
 import re
+import traceback
 
 # 1MB buffer size
 BUFFER_SIZE = 1000000
@@ -113,17 +114,27 @@ while True:
     # Check wether the file is currently in the cache
     cacheFile = open(cacheLocation, "r")
     cacheData = cacheFile.readlines()
-
+    print(type(cacheData))
     print ('Cache hit! Loading from cache file: ' + cacheLocation)
     # ProxyServer finds a cache hit
     # Send back response to client 
     # ~~~~ INSERT CODE ~~~~
-    #clientSocket.sendall(cacheData)
+    joinedData = ''.join(cacheData).encode('utf-8')
+
+    try:
+        clientSocket.sendall(joinedData)
+        print('Sent to the client (from cache).')
+    except Exception as e:
+        print(f"[!] Failed to send cacheData: {e}")
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
     print ('Sent to the client:')
-    print ('> ' + cacheData)
-  except:
+    #print ('> ' + cacheData)
+    for line in cacheData:
+      print('> ' + line.strip())
+  except Exception as e:
+    print(f"Cache miss or error: {e}")
+    traceback.print_exc()
     # cache miss.  Get resource from origin server
     originServerSocket = None
     # Create a socket to connect to origin server
